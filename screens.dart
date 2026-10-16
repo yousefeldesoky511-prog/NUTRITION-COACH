@@ -13,8 +13,8 @@ const kLime = Color(0xFFCDEFA6);
 Widget card(Widget child, {Color color = Colors.white}) => Container(
     padding: const EdgeInsets.all(16),
     margin: const EdgeInsets.only(bottom: 12),
-    decoration: BoxDecoration(
-        color: color, borderRadius: BorderRadius.circular(20)),
+    decoration:
+        BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
     child: child);
 
 double _n(String s) => double.tryParse(s.replaceAll(',', '.')) ?? 0;
@@ -27,14 +27,14 @@ class Root extends StatefulWidget {
 
 class _RootState extends State<Root> {
   int i = 0;
+
   @override
   Widget build(BuildContext context) {
     const pages = [Home(), ProgressPage(), MenuPage()];
     final idx = i == 0 ? 0 : (i == 1 ? 1 : 2);
     return Scaffold(
       body: SafeArea(child: pages[idx]),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
@@ -49,14 +49,12 @@ class _RootState extends State<Root> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
         color: Colors.white,
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _nav(0, Icons.home_outlined, t('home')),
-              _nav(1, Icons.bar_chart, t('progress')),
-              const SizedBox(width: 48),
-              _nav(2, Icons.grid_view, t('menu')),
-            ]),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+          _nav(0, Icons.home_outlined, t('home')),
+          _nav(1, Icons.bar_chart, t('progress')),
+          const SizedBox(width: 48),
+          _nav(2, Icons.grid_view, t('menu')),
+        ]),
       ),
     );
   }
@@ -69,8 +67,7 @@ class _RootState extends State<Root> {
             Icon(ic, color: i == n ? kGreen : Colors.grey),
             Text(label,
                 style: TextStyle(
-                    fontSize: 11,
-                    color: i == n ? kGreen : Colors.grey)),
+                    fontSize: 11, color: i == n ? kGreen : Colors.grey)),
           ])));
 }
 
@@ -87,66 +84,53 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
       valueListenable: db.Store.tick,
-      builder: (context, snapshots) => FutureBuilder<List<db.Row>>(
+      builder: (context, _, __) => FutureBuilder<List<db.Row>>(
           future: db.Store.meals(day),
           builder: (c, s) {
-            final ms = s.data ?? [];
-            double sum(String k) => ms.fold(
-                0.0, (a, m) => a + ((m[k] as num?) ?? 0));
+            final ms = s.data ?? <db.Row>[];
+            double sum(String k) => ms.fold<double>(
+                0.0, (a, m) => a + ((m[k] as num?) ?? 0).toDouble());
             final pl = db.Store.plan();
             final eaten = sum('kcal');
             final left = (pl['kcal']! - eaten).round();
-            final monday =
-                day.subtract(Duration(days: day.weekday - 1));
-            return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-              Text(t('hello'),
-                  style: const TextStyle(color: Colors.grey)),
+            final monday = day.subtract(Duration(days: day.weekday - 1));
+            return ListView(padding: const EdgeInsets.all(16), children: [
+              Text(t('hello'), style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 12),
               card(
                   Row(children: [
                     Expanded(
                         child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-    children: [
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                           Text(t('daily'),
-                              style:
-                                  const TextStyle(fontSize: 13)),
+                              style: const TextStyle(fontSize: 13)),
                           const SizedBox(height: 6),
                           Text(
                               '${eaten.round()} / ${pl['kcal']!.round()} kcal',
                               style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold)),
+                                  fontSize: 22, fontWeight: FontWeight.bold)),
                         ])),
                     SizedBox(
                         width: 76,
                         height: 76,
-                        child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox.expand(
-                                  child: CircularProgressIndicator(
-                                      value: (eaten / pl['kcal']!)
-                                          .clamp(0, 1)
-                                          .toDouble(),
-                                      strokeWidth: 9,
-                                      color: kGreen,
-                                      backgroundColor: Colors.white)),
-                              Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('$left',
-                                        style: const TextStyle(
-                                            fontWeight:
-                                                FontWeight.bold)),
-                                    Text(t('left'),
-                                        style: const TextStyle(
-                                            fontSize: 8)),
-                                  ]),
-                            ])),
+                        child: Stack(alignment: Alignment.center, children: [
+                          SizedBox.expand(
+                              child: CircularProgressIndicator(
+                                  value: (eaten / pl['kcal']!)
+                                      .clamp(0, 1)
+                                      .toDouble(),
+                                  strokeWidth: 9,
+                                  color: kGreen,
+                                  backgroundColor: Colors.white)),
+                          Column(mainAxisSize: MainAxisSize.min, children: [
+                            Text('$left',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            Text(t('left'),
+                                style: const TextStyle(fontSize: 8)),
+                          ]),
+                        ])),
                   ]),
                   color: kLime),
               Row(children: [
@@ -161,8 +145,7 @@ class _HomeState extends State<Home> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(7, (k) {
                     final d = monday.add(Duration(days: k));
-                    final sel =
-                        d.day == day.day && d.month == day.month;
+                    final sel = d.day == day.day && d.month == day.month;
                     return GestureDetector(
                         onTap: () => setState(() => day = d),
                         child: Container(
@@ -170,13 +153,11 @@ class _HomeState extends State<Home> {
                                 vertical: 8, horizontal: 9),
                             decoration: BoxDecoration(
                                 color: sel ? kLime : null,
-                                borderRadius:
-                                    BorderRadius.circular(20)),
+                                borderRadius: BorderRadius.circular(20)),
                             child: Column(children: [
                               Text(dn(d.weekday),
                                   style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey)),
+                                      fontSize: 11, color: Colors.grey)),
                               const SizedBox(height: 4),
                               Text('${d.day}',
                                   style: const TextStyle(
@@ -187,7 +168,7 @@ class _HomeState extends State<Home> {
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
- if (ms.isEmpty)
+              if (ms.isEmpty)
                 card(Text(t('empty'),
                     style: const TextStyle(color: Colors.grey))),
               for (final m in ms)
@@ -195,55 +176,48 @@ class _HomeState extends State<Home> {
                   if (m['photo'] != null &&
                       File(m['photo'] as String).existsSync())
                     Padding(
-                        padding:
-                            const EdgeInsetsDirectional.only(end: 12),
+                        padding: const EdgeInsetsDirectional.only(end: 12),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                                File(m['photo'] as String),
-                                width: 52,
-                                height: 52,
-                                fit: BoxFit.cover))),
+                            child: Image.file(File(m['photo'] as String),
+                                width: 52, height: 52, fit: BoxFit.cover))),
                   Expanded(
                       child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        Text(
-                            '${t(m['type'] as String)} · ${m['name']}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600)),
+                        Text('${t(m['type'] as String)} · ${m['name']}',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
                         Text(
                             '${(m['kcal'] as num).round()} kcal · P ${(m['protein'] as num).round()} · F ${(m['fat'] as num).round()} · C ${(m['carbs'] as num).round()}',
                             style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey)),
+                                fontSize: 12, color: Colors.grey)),
                       ])),
                   IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: () =>
-                          db.Store.delMeal(m['id'] as int)),
+                      onPressed: () => db.Store.delMeal(m['id'] as int)),
                 ])),
             ]);
           }));
 
   Widget _macro(String k, double v, double goal) => Expanded(
-      child: card(
-          Column(children: [
-            Text(t(k), style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 4),
-            Text('${v.round()} / ${goal.round()} g',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 13)),
-            const SizedBox(height: 6),
-            LinearProgressIndicator(
-                value: (v / goal).clamp(0, 1).toDouble(),
-                color: kGreen,
-                backgroundColor: kLime),
-          ]),
-          ));
+          child: card(
+        Column(children: [
+          Text(t(k), style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 4),
+          Text('${v.round()} / ${goal.round()} g',
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          const SizedBox(height: 6),
+          LinearProgressIndicator(
+              value: (v / goal).clamp(0, 1).toDouble(),
+              color: kGreen,
+              backgroundColor: kLime),
+        ]),
+      ));
 }
- // ---------------- Progress ----------------
+
+// ---------------- Progress ----------------
 class ProgressPage extends StatefulWidget {
   const ProgressPage({super.key});
   @override
@@ -256,21 +230,22 @@ class _ProgressState extends State<ProgressPage> {
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
       valueListenable: db.Store.tick,
-      builder: (_, , _) => FutureBuilder<List<Object>>(
-          future: Future.wait([
+      builder: (_, __, ___) => FutureBuilder<List<dynamic>>(
+          future: Future.wait<dynamic>([
             db.Store.dailyKcal(days),
-            db.Store.weights()
+            db.Store.weights(),
           ]),
           builder: (c, s) {
-            final data = s.data?[0] as List<double>? ??
-                List.filled(days, 0.0);
-            final ws = (s.data?[1] as List<db.Row>?) ?? [];
+            final List<double> data = (s.data?[0] as List?)
+                    ?.map((e) => (e as num).toDouble())
+                    .toList() ??
+                List<double>.filled(days, 0.0);
+            final List<db.Row> ws =
+                (s.data?[1] as List?)?.cast<db.Row>() ?? <db.Row>[];
             final target = db.Store.plan()['kcal']!;
             final today = DateTime.now();
 
-            return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
+            return ListView(padding: const EdgeInsets.all(16), children: [
               Row(children: [
                 ChoiceChip(
                     label: Text(t('week')),
@@ -287,13 +262,11 @@ class _ProgressState extends State<ProgressPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(t('kcal'),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600)),
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                     Text(
-                        '${data.last.round()} kcal   ${t('target')}: ${target.round()}',
+                        '${data.isEmpty ? 0 : data.last.round()} kcal   ${t('target')}: ${target.round()}',
                         style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
                     SizedBox(
                         height: 190,
@@ -303,9 +276,8 @@ class _ProgressState extends State<ProgressPage> {
                               for (var i = 0; i < data.length; i++)
                                 Expanded(
                                     child: Padding(
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 1.5),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 1.5),
                                         child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,
@@ -313,7 +285,8 @@ class _ProgressState extends State<ProgressPage> {
                                               Container(
                                                   height: 150 *
                                                       (data[i] / target)
-                                                          .clamp(0.02, 1.2) /
+                                                          .clamp(0.02, 1.2)
+                                                          .toDouble() /
                                                       1.2,
                                                   decoration: BoxDecoration(
                                                       color: i ==
@@ -325,7 +298,7 @@ class _ProgressState extends State<ProgressPage> {
                                                               .circular(6))),
                                               if (days == 7)
                                                 Padding(
-padding:
+                                                    padding:
                                                         const EdgeInsets.only(
                                                             top: 6),
                                                     child: Text(
@@ -347,8 +320,7 @@ padding:
                 Expanded(
                     child: Text(t('weight'),
                         style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold))),
+                            fontSize: 18, fontWeight: FontWeight.bold))),
                 TextButton.icon(
                     onPressed: _addWeight,
                     icon: const Icon(Icons.add),
@@ -358,14 +330,12 @@ padding:
                 card(Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(DateTime.fromMillisecondsSinceEpoch(
-                              w['ts'] as int)
+                      Text(DateTime.fromMillisecondsSinceEpoch(w['ts'] as int)
                           .toString()
                           .substring(0, 10)),
-                      Text(
-                          '${(w['kg'] as num).toStringAsFixed(1)} kg',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold)),
+                      Text('${(w['kg'] as num).toStringAsFixed(1)} kg',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.bold)),
                     ])),
             ]);
           }));
@@ -379,9 +349,8 @@ padding:
               title: Text(t('add_weight')),
               content: TextField(
                   controller: c,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
-                          decimal: true)),
+                  keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true)),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -416,9 +385,7 @@ class _AddMealState extends State<AddMeal> {
 
   Future<void> _pick() async {
     final x = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1024,
-        imageQuality: 80);
+        source: ImageSource.camera, maxWidth: 1024, imageQuality: 80);
 
     if (x == null) return;
 
@@ -429,15 +396,16 @@ class _AddMealState extends State<AddMeal> {
     await File(x.path).copy(dest);
     setState(() => photo = dest);
   }
- @override
+
+  @override
   Widget build(BuildContext context) => Padding(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
         Text(t('add_meal'),
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold)),
+            style:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Wrap(spacing: 8, children: [
           for (final k in ['breakfast', 'lunch', 'dinner', 'snack'])
@@ -456,11 +424,9 @@ class _AddMealState extends State<AddMeal> {
                     padding: const EdgeInsets.only(right: 6),
                     child: TextField(
                         controller: c[k],
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                                decimal: true),
-                        decoration:
-                            InputDecoration(labelText: t(k))))),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        decoration: InputDecoration(labelText: t(k))))),
         ]),
         const SizedBox(height: 12),
         Row(children: [
@@ -493,7 +459,8 @@ class _AddMealState extends State<AddMeal> {
         ]),
       ])));
 }
- // ---------------- Menu ----------------
+
+// ---------------- Menu ----------------
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
 
@@ -505,18 +472,17 @@ class _MenuState extends State<MenuPage> {
   late String sex = db.Store.profile['sex'] ?? 'm';
   late String act = db.Store.profile['act'] ?? 'mid';
 
-  late final age = TextEditingController(
-      text: '${db.Store.profile['age'] ?? ''}');
-  late final height = TextEditingController(
-      text: '${db.Store.profile['height'] ?? ''}');
-  late final weight = TextEditingController(
-      text: '${db.Store.profile['weight'] ?? ''}');
-  late final target = TextEditingController(
-      text: '${db.Store.profile['target'] ?? ''}');
+  late final age =
+      TextEditingController(text: '${db.Store.profile['age'] ?? ''}');
+  late final height =
+      TextEditingController(text: '${db.Store.profile['height'] ?? ''}');
+  late final weight =
+      TextEditingController(text: '${db.Store.profile['weight'] ?? ''}');
+  late final target =
+      TextEditingController(text: '${db.Store.profile['target'] ?? ''}');
 
   void _snack(String m) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(m)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
   @override
@@ -531,7 +497,6 @@ class _MenuState extends State<MenuPage> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-
         SegmentedButton<String>(
           segments: const [
             ButtonSegment(value: 'en', label: Text('English')),
@@ -540,53 +505,40 @@ class _MenuState extends State<MenuPage> {
           selected: {db.Store.lang.value},
           onSelectionChanged: (s) => db.Store.setLang(s.first),
         ),
-
         const SizedBox(height: 16),
-
         card(
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 t('profile'),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-
               SegmentedButton<String>(
                 segments: [
-                  ButtonSegment(
-                      value: 'm', label: Text(t('male'))),
-                  ButtonSegment(
-                      value: 'f', label: Text(t('female'))),
+                  ButtonSegment(value: 'm', label: Text(t('male'))),
+                  ButtonSegment(value: 'f', label: Text(t('female'))),
                 ],
                 selected: {sex},
-                onSelectionChanged: (s) =>
-                    setState(() => sex = s.first),
+                onSelectionChanged: (s) => setState(() => sex = s.first),
               ),
-
               _f(age, 'age'),
               _f(height, 'height'),
               _f(weight, 'cur_weight'),
               _f(target, 'target_weight'),
-
               const SizedBox(height: 8),
-
               SegmentedButton<String>(
                 segments: [
                   for (final k in ['low', 'mid', 'high'])
                     ButtonSegment(value: k, label: Text(t(k))),
                 ],
                 selected: {act},
-                onSelectionChanged: (s) =>
-                    setState(() => act = s.first),
+                onSelectionChanged: (s) => setState(() => act = s.first),
               ),
-
               const SizedBox(height: 12),
-
               FilledButton(
-                style: FilledButton.styleFrom(
-                    backgroundColor: kGreen),
+                style: FilledButton.styleFrom(backgroundColor: kGreen),
                 onPressed: () async {
                   if (_n(age.text) <= 0 ||
                       _n(height.text) <= 0 ||
@@ -601,8 +553,7 @@ class _MenuState extends State<MenuPage> {
                     'age': _n(age.text),
                     'height': _n(height.text),
                     'weight': _n(weight.text),
-                    if (_n(target.text) > 0)
-                      'target': _n(target.text),
+                    if (_n(target.text) > 0) 'target': _n(target.text),
                   });
 
                   if (!mounted) return;
@@ -614,62 +565,50 @@ class _MenuState extends State<MenuPage> {
             ],
           ),
         ),
-
         if (db.Store.profile.isNotEmpty)
- card(
+          card(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    '${t('ideal')}: ${pl['ideal']!.toStringAsFixed(1)} kg'),
-                Text(
-                    '${t('goal_kcal')}: ${pl['kcal']!.round()} kcal'),
+                Text('${t('ideal')}: ${pl['ideal']!.toStringAsFixed(1)} kg'),
+                Text('${t('goal_kcal')}: ${pl['kcal']!.round()} kcal'),
                 Text(
                     '${t('protein')}: ${pl['p']!.round()} g · ${t('fat')}: ${pl['f']!.round()} g · ${t('carbs')}: ${pl['c']!.round()} g'),
                 const SizedBox(height: 8),
                 Text(
                   t('disclaimer'),
-                  style: const TextStyle(
-                      fontSize: 11, color: Colors.grey),
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
             ),
             color: kLime,
           ),
-
         card(
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 t('backup'),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-
               const SizedBox(height: 8),
-
               Wrap(
                 spacing: 8,
                 children: [
                   OutlinedButton(
                     onPressed: () async {
                       await Clipboard.setData(
-                        ClipboardData(
-                            text: await db.Store.exportJson()),
+                        ClipboardData(text: await db.Store.exportJson()),
                       );
                       if (mounted) _snack(t('copied'));
                     },
                     child: Text(t('export')),
                   ),
-
                   OutlinedButton(
                     onPressed: () async {
-                      final d =
-                          await Clipboard.getData('text/plain');
+                      final d = await Clipboard.getData('text/plain');
 
-                      final ok = await db.Store.importJson(
-                          d?.text ?? '');
+                      final ok = await db.Store.importJson(d?.text ?? '');
 
                       if (!mounted) return;
                       setState(() {});
@@ -688,8 +627,7 @@ class _MenuState extends State<MenuPage> {
 
   Widget _f(TextEditingController c, String k) => TextField(
         controller: c,
-        keyboardType:
-            const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: InputDecoration(labelText: t(k)),
       );
 }
