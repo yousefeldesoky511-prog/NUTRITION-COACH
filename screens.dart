@@ -87,7 +87,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
       valueListenable: db.Store.tick,
-      builder: (_, , _) => FutureBuilder<List<db.Row>>(
+      builder: (context, snapshots) => FutureBuilder<List<db.Row>>(
           future: db.Store.meals(day),
           builder: (c, s) {
             final ms = s.data ?? [];
