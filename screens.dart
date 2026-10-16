@@ -1,10 +1,10 @@
-[16-10-2026 8:58 PM] .: import 'dart:io';
+[16-10-2026 9:25 PM] .: import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'db.dart' hide Row;
+import 'db.dart' as db;
 import 'i18n.dart';
 
 const kGreen = Color(0xFF8CCB3A);
@@ -27,14 +27,14 @@ class Root extends StatefulWidget {
 
 class _RootState extends State<Root> {
   int i = 0;
-
   @override
   Widget build(BuildContext context) {
     const pages = [Home(), ProgressPage(), MenuPage()];
     final idx = i == 0 ? 0 : (i == 1 ? 1 : 2);
     return Scaffold(
       body: SafeArea(child: pages[idx]),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
@@ -49,12 +49,14 @@ class _RootState extends State<Root> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
         color: Colors.white,
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          _nav(0, Icons.home_outlined, t('home')),
-          _nav(1, Icons.bar_chart, t('progress')),
-          const SizedBox(width: 48),
-          _nav(2, Icons.grid_view, t('menu')),
-        ]),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _nav(0, Icons.home_outlined, t('home')),
+              _nav(1, Icons.bar_chart, t('progress')),
+              const SizedBox(width: 48),
+              _nav(2, Icons.grid_view, t('menu')),
+            ]),
       ),
     );
   }
@@ -67,12 +69,12 @@ class _RootState extends State<Root> {
             Icon(ic, color: i == n ? kGreen : Colors.grey),
             Text(label,
                 style: TextStyle(
-                    fontSize: 11, color: i == n ? kGreen : Colors.grey)),
+                    fontSize: 11,
+                    color: i == n ? kGreen : Colors.grey)),
           ])));
 }
 
 // ---------------- Home ----------------
-
 class Home extends StatefulWidget {
   const Home({super.key});
   @override
@@ -84,30 +86,35 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
-      valueListenable: Store.tick,
-      builder: (_, , _) => FutureBuilder<List<Map<String, Object?>>>(
-          future: Store.meals(day),
+      valueListenable: db.Store.tick,
+      builder: (_, , _) => FutureBuilder<List<db.Row>>(
+          future: db.Store.meals(day),
           builder: (c, s) {
             final ms = s.data ?? [];
-            double sum(String k) =>
-                ms.fold(0.0, (a, m) => a + ((m[k] as num?) ?? 0));
-            final pl = Store.plan();
+            double sum(String k) => ms.fold(
+                0.0, (a, m) => a + ((m[k] as num?) ?? 0));
+            final pl = db.Store.plan();
             final eaten = sum('kcal');
             final left = (pl['kcal']! - eaten).round();
-            final monday = day.subtract(Duration(days: day.weekday - 1));
-
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Text(t('hello'), style: const TextStyle(color: Colors.grey)),
+            final monday =
+                day.subtract(Duration(days: day.weekday - 1));
+            return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+              Text(t('hello'),
+                  style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 12),
               card(
                   Row(children: [
                     Expanded(
                         child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+[16-10-2026 9:25 PM] .: children: [
                           Text(t('daily'),
-                              style: const TextStyle(fontSize: 13)),
-[16-10-2026 8:58 PM] .: const SizedBox(height: 6),
+                              style:
+                                  const TextStyle(fontSize: 13)),
+                          const SizedBox(height: 6),
                           Text(
                               '${eaten.round()} / ${pl['kcal']!.round()} kcal',
                               style: const TextStyle(
@@ -117,23 +124,29 @@ class _HomeState extends State<Home> {
                     SizedBox(
                         width: 76,
                         height: 76,
-                        child: Stack(alignment: Alignment.center, children: [
-                          SizedBox.expand(
-                              child: CircularProgressIndicator(
-                                  value: (eaten / pl['kcal']!)
-                                      .clamp(0, 1)
-                                      .toDouble(),
-                                  strokeWidth: 9,
-                                  color: kGreen,
-                                  backgroundColor: Colors.white)),
-                          Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text('$left',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            Text(t('left'),
-                                style: const TextStyle(fontSize: 8)),
-                          ]),
-                        ])),
+                        child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox.expand(
+                                  child: CircularProgressIndicator(
+                                      value: (eaten / pl['kcal']!)
+                                          .clamp(0, 1)
+                                          .toDouble(),
+                                      strokeWidth: 9,
+                                      color: kGreen,
+                                      backgroundColor: Colors.white)),
+                              Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('$left',
+                                        style: const TextStyle(
+                                            fontWeight:
+                                                FontWeight.bold)),
+                                    Text(t('left'),
+                                        style: const TextStyle(
+                                            fontSize: 8)),
+                                  ]),
+                            ])),
                   ]),
                   color: kLime),
               Row(children: [
@@ -148,7 +161,8 @@ class _HomeState extends State<Home> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(7, (k) {
                     final d = monday.add(Duration(days: k));
-                    final sel = d.day == day.day && d.month == day.month;
+                    final sel =
+                        d.day == day.day && d.month == day.month;
                     return GestureDetector(
                         onTap: () => setState(() => day = d),
                         child: Container(
@@ -156,11 +170,13 @@ class _HomeState extends State<Home> {
                                 vertical: 8, horizontal: 9),
                             decoration: BoxDecoration(
                                 color: sel ? kLime : null,
-                                borderRadius: BorderRadius.circular(20)),
+                                borderRadius:
+                                    BorderRadius.circular(20)),
                             child: Column(children: [
                               Text(dn(d.weekday),
                                   style: const TextStyle(
-                                      fontSize: 11, color: Colors.grey)),
+                                      fontSize: 11,
+                                      color: Colors.grey)),
                               const SizedBox(height: 4),
                               Text('${d.day}',
                                   style: const TextStyle(
@@ -171,7 +187,7 @@ class _HomeState extends State<Home> {
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              if (ms.isEmpty)
+[16-10-2026 9:25 PM] .: if (ms.isEmpty)
                 card(Text(t('empty'),
                     style: const TextStyle(color: Colors.grey))),
               for (final m in ms)
@@ -183,23 +199,30 @@ class _HomeState extends State<Home> {
                             const EdgeInsetsDirectional.only(end: 12),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.file(File(m['photo'] as String),
-[16-10-2026 8:58 PM] .: width: 52, height: 52, fit: BoxFit.cover))),
+                            child: Image.file(
+                                File(m['photo'] as String),
+                                width: 52,
+                                height: 52,
+                                fit: BoxFit.cover))),
                   Expanded(
                       child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
-                        Text('${t(m['type'] as String)} · ${m['name']}',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
+                        Text(
+                            '${t(m['type'] as String)} · ${m['name']}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600)),
                         Text(
                             '${(m['kcal'] as num).round()} kcal · P ${(m['protein'] as num).round()} · F ${(m['fat'] as num).round()} · C ${(m['carbs'] as num).round()}',
                             style: const TextStyle(
-                                fontSize: 12, color: Colors.grey)),
+                                fontSize: 12,
+                                color: Colors.grey)),
                       ])),
                   IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: () => Store.delMeal(m['id'] as int)),
+                      onPressed: () =>
+                          db.Store.delMeal(m['id'] as int)),
                 ])),
             ]);
           }));
@@ -210,8 +233,8 @@ class _HomeState extends State<Home> {
             Text(t(k), style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 4),
             Text('${v.round()} / ${goal.round()} g',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 6),
             LinearProgressIndicator(
                 value: (v / goal).clamp(0, 1).toDouble(),
@@ -220,9 +243,7 @@ class _HomeState extends State<Home> {
           ]),
           ));
 }
-
-// ---------------- Progress ----------------
-
+[16-10-2026 9:25 PM] .: // ---------------- Progress ----------------
 class ProgressPage extends StatefulWidget {
   const ProgressPage({super.key});
   @override
@@ -234,18 +255,22 @@ class _ProgressState extends State<ProgressPage> {
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
-      valueListenable: Store.tick,
+      valueListenable: db.Store.tick,
       builder: (_, , _) => FutureBuilder<List<Object>>(
-          future: Future.wait([Store.dailyKcal(days), Store.weights()]),
+          future: Future.wait([
+            db.Store.dailyKcal(days),
+            db.Store.weights()
+          ]),
           builder: (c, s) {
-            final data =
-                s.data?[0] as List<double>? ?? List.filled(days, 0.0);
-            final ws =
-                (s.data?[1] as List<Map<String, Object?>>?) ?? [];
-            final target = Store.plan()['kcal']!;
+            final data = s.data?[0] as List<double>? ??
+                List.filled(days, 0.0);
+            final ws = (s.data?[1] as List<db.Row>?) ?? [];
+            final target = db.Store.plan()['kcal']!;
             final today = DateTime.now();
 
-            return ListView(padding: const EdgeInsets.all(16), children: [
+            return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
               Row(children: [
                 ChoiceChip(
                     label: Text(t('week')),
@@ -262,10 +287,13 @@ class _ProgressState extends State<ProgressPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(t('kcal'),
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
-                    Text('${data.last.round()} kcal   ${t('target')}: ${target.round()}',
                         style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontWeight: FontWeight.w600)),
+                    Text(
+                        '${data.last.round()} kcal   ${t('target')}: ${target.round()}',
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
                     SizedBox(
                         height: 190,
@@ -274,9 +302,10 @@ class _ProgressState extends State<ProgressPage> {
                             children: [
                               for (var i = 0; i < data.length; i++)
                                 Expanded(
-[16-10-2026 8:58 PM] .: child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 1.5),
+                                    child: Padding(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 1.5),
                                         child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,
@@ -287,15 +316,16 @@ class _ProgressState extends State<ProgressPage> {
                                                           .clamp(0.02, 1.2) /
                                                       1.2,
                                                   decoration: BoxDecoration(
-                                                      color: i == data.length - 1
+                                                      color: i ==
+                                                              data.length - 1
                                                           ? kGreen
                                                           : kLime,
                                                       borderRadius:
-                                                          BorderRadius.circular(
-                                                              6))),
+                                                          BorderRadius
+                                                              .circular(6))),
                                               if (days == 7)
                                                 Padding(
-                                                    padding:
+[16-10-2026 9:25 PM] .: padding:
                                                         const EdgeInsets.only(
                                                             top: 6),
                                                     child: Text(
@@ -317,7 +347,8 @@ class _ProgressState extends State<ProgressPage> {
                 Expanded(
                     child: Text(t('weight'),
                         style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold))),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold))),
                 TextButton.icon(
                     onPressed: _addWeight,
                     icon: const Icon(Icons.add),
@@ -331,22 +362,26 @@ class _ProgressState extends State<ProgressPage> {
                               w['ts'] as int)
                           .toString()
                           .substring(0, 10)),
-                      Text('${(w['kg'] as num).toStringAsFixed(1)} kg',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                          '${(w['kg'] as num).toStringAsFixed(1)} kg',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold)),
                     ])),
             ]);
           }));
 
   void _addWeight() {
     final c = TextEditingController();
+
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
               title: Text(t('add_weight')),
               content: TextField(
-[16-10-2026 8:58 PM] .: controller: c,
+                  controller: c,
                   keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true)),
+                      const TextInputType.numberWithOptions(
+                          decimal: true)),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -354,7 +389,7 @@ class _ProgressState extends State<ProgressPage> {
                 FilledButton(
                     onPressed: () {
                       final v = _n(c.text);
-                      if (v > 0) Store.addWeight(v);
+                      if (v > 0) db.Store.addWeight(v);
                       Navigator.pop(context);
                     },
                     child: Text(t('save'))),
@@ -364,7 +399,6 @@ class _ProgressState extends State<ProgressPage> {
 }
 
 // ---------------- Add meal ----------------
-
 class AddMeal extends StatefulWidget {
   const AddMeal({super.key});
   @override
@@ -374,30 +408,36 @@ class AddMeal extends StatefulWidget {
 class _AddMealState extends State<AddMeal> {
   String type = 'breakfast';
   String? photo;
+
   final c = {
     for (final k in ['name', 'kcal', 'protein', 'fat', 'carbs'])
       k: TextEditingController()
   };
 
   Future<void> _pick() async {
-    final x = await ImagePicker()
-        .pickImage(source: ImageSource.camera, maxWidth: 1024, imageQuality: 80);
+    final x = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1024,
+        imageQuality: 80);
+
     if (x == null) return;
+
     final dir = await getApplicationDocumentsDirectory();
     final dest =
         p.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
+
     await File(x.path).copy(dest);
     setState(() => photo = dest);
   }
-
-  @override
+[16-10-2026 9:25 PM] .: @override
   Widget build(BuildContext context) => Padding(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
         Text(t('add_meal'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Wrap(spacing: 8, children: [
           for (final k in ['breakfast', 'lunch', 'dinner', 'snack'])
@@ -417,8 +457,10 @@ class _AddMealState extends State<AddMeal> {
                     child: TextField(
                         controller: c[k],
                         keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(labelText: t(k))))),
+                            const TextInputType.numberWithOptions(
+                                decimal: true),
+                        decoration:
+                            InputDecoration(labelText: t(k))))),
         ]),
         const SizedBox(height: 12),
         Row(children: [
@@ -434,7 +476,7 @@ class _AddMealState extends State<AddMeal> {
           FilledButton(
               style: FilledButton.styleFrom(backgroundColor: kGreen),
               onPressed: () async {
-                await Store.addMeal({
+                await db.Store.addMeal({
                   'ts': DateTime.now().millisecondsSinceEpoch,
                   'type': type,
                   'name': c['name']!.text,
@@ -444,129 +486,210 @@ class _AddMealState extends State<AddMeal> {
                   'carbs': _n(c['carbs']!.text),
                   'photo': photo,
                 });
+
                 if (context.mounted) Navigator.pop(context);
               },
               child: Text(t('save'))),
         ]),
       ])));
 }
-
-// ---------------- Menu ----------------
-
+[16-10-2026 9:25 PM] .: // ---------------- Menu ----------------
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
+
   @override
   State<MenuPage> createState() => _MenuState();
 }
-[16-10-2026 8:58 PM] .: class _MenuState extends State<MenuPage> {
-  late String sex = Store.profile['sex'] ?? 'm';
-  late String act = Store.profile['act'] ?? 'mid';
-  late final age =
-      TextEditingController(text: '${Store.profile['age'] ?? ''}');
-  late final height =
-      TextEditingController(text: '${Store.profile['height'] ?? ''}');
-  late final weight =
-      TextEditingController(text: '${Store.profile['weight'] ?? ''}');
-  late final target =
-      TextEditingController(text: '${Store.profile['target'] ?? ''}');
 
-  void _snack(String m) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(m)));
+class _MenuState extends State<MenuPage> {
+  late String sex = db.Store.profile['sex'] ?? 'm';
+  late String act = db.Store.profile['act'] ?? 'mid';
+
+  late final age = TextEditingController(
+      text: '${db.Store.profile['age'] ?? ''}');
+  late final height = TextEditingController(
+      text: '${db.Store.profile['height'] ?? ''}');
+  late final weight = TextEditingController(
+      text: '${db.Store.profile['weight'] ?? ''}');
+  late final target = TextEditingController(
+      text: '${db.Store.profile['target'] ?? ''}');
+
+  void _snack(String m) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(m)));
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pl = Store.plan();
-    return ListView(padding: const EdgeInsets.all(16), children: [
-      Text(t('language'), style: const TextStyle(fontWeight: FontWeight.bold)),
-      const SizedBox(height: 8),
-      SegmentedButton<String>(
+    final pl = db.Store.plan();
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(
+          t('language'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+
+        SegmentedButton<String>(
           segments: const [
             ButtonSegment(value: 'en', label: Text('English')),
-            ButtonSegment(value: 'ar', label: Text('العربية'))
+            ButtonSegment(value: 'ar', label: Text('العربية')),
           ],
-          selected: {Store.lang.value},
-          onSelectionChanged: (s) => Store.setLang(s.first)),
-      const SizedBox(height: 16),
-      card(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t('profile'),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'm', label: Text(t('male'))),
-              ButtonSegment(value: 'f', label: Text(t('female')))
-            ],
-            selected: {sex},
-            onSelectionChanged: (s) => setState(() => sex = s.first)),
-        _f(age, 'age'),
-        _f(height, 'height'),
-        _f(weight, 'cur_weight'),
-        _f(target, 'target_weight'),
-        const SizedBox(height: 8),
-        SegmentedButton<String>(
-            segments: [
-              for (final k in ['low', 'mid', 'high'])
-                ButtonSegment(value: k, label: Text(t(k)))
-            ],
-            selected: {act},
-            onSelectionChanged: (s) => setState(() => act = s.first)),
-        const SizedBox(height: 12),
-        FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: kGreen),
-            onPressed: () async {
-              if (_n(age.text) <= 0 ||
-                  _n(height.text) <= 0 ||
-                  _n(weight.text) <= 0) return;
-              await Store.saveProfile({
-                'sex': sex,
-                'act': act,
-                'age': _n(age.text),
-                'height': _n(height.text),
-                'weight': _n(weight.text),
-                if (_n(target.text) > 0) 'target': _n(target.text),
-              });
-              setState(() {});
-              _snack(t('saved'));
-            },
-            child: Text(t('save'))),
-      ])),
-      if (Store.profile.isNotEmpty)
+          selected: {db.Store.lang.value},
+          onSelectionChanged: (s) => db.Store.setLang(s.first),
+        ),
+
+        const SizedBox(height: 16),
+
         card(
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${t('ideal')}: ${pl['ideal']!.toStringAsFixed(1)} kg'),
-              Text('${t('goal_kcal')}: ${pl['kcal']!.round()} kcal'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                  '${t('protein')}: ${pl['p']!.round()} g · ${t('fat')}: ${pl['f']!.round()} g · ${t('carbs')}: ${pl['c']!.round()} g'),
+                t('profile'),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(
+                      value: 'm', label: Text(t('male'))),
+                  ButtonSegment(
+                      value: 'f', label: Text(t('female'))),
+                ],
+                selected: {sex},
+                onSelectionChanged: (s) =>
+                    setState(() => sex = s.first),
+              ),
+
+              _f(age, 'age'),
+              _f(height, 'height'),
+              _f(weight, 'cur_weight'),
+              _f(target, 'target_weight'),
+
               const SizedBox(height: 8),
-              Text(t('disclaimer'),
-                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
-            ]),
-            color: kLime),
-      card(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t('backup'), style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Wrap(spacing: 8, children: [
-          OutlinedButton(
-              onPressed: () async {
-                await Clipboard.setData(
-[16-10-2026 8:58 PM] .: ClipboardData(text: await Store.exportJson()));
-                _snack(t('copied'));
-              },
-              child: Text(t('export'))),
-          OutlinedButton(
-              onPressed: () async {
-                final d = await Clipboard.getData('text/plain');
-                final ok = await Store.importJson(d?.text ?? '');
-                setState(() {});
-                _snack(ok ? t('imported') : t('bad'));
-              },
-              child: Text(t('import'))),
-        ]),
-      ])),
-    ]);
+
+              SegmentedButton<String>(
+                segments: [
+                  for (final k in ['low', 'mid', 'high'])
+                    ButtonSegment(value: k, label: Text(t(k))),
+                ],
+                selected: {act},
+                onSelectionChanged: (s) =>
+                    setState(() => act = s.first),
+              ),
+
+              const SizedBox(height: 12),
+
+              FilledButton(
+                style: FilledButton.styleFrom(
+                    backgroundColor: kGreen),
+                onPressed: () async {
+                  if (_n(age.text) <= 0 ||
+                      _n(height.text) <= 0 ||
+                      _n(weight.text) <= 0) {
+                    _snack(t('bad'));
+                    return;
+                  }
+
+                  await db.Store.saveProfile({
+                    'sex': sex,
+                    'act': act,
+                    'age': _n(age.text),
+                    'height': _n(height.text),
+                    'weight': _n(weight.text),
+                    if (_n(target.text) > 0)
+                      'target': _n(target.text),
+                  });
+
+                  if (!mounted) return;
+                  setState(() {});
+                  _snack(t('saved'));
+                },
+                child: Text(t('save')),
+              ),
+            ],
+          ),
+        ),
+
+        if (db.Store.profile.isNotEmpty)
+[16-10-2026 9:25 PM] .: card(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    '${t('ideal')}: ${pl['ideal']!.toStringAsFixed(1)} kg'),
+                Text(
+                    '${t('goal_kcal')}: ${pl['kcal']!.round()} kcal'),
+                Text(
+                    '${t('protein')}: ${pl['p']!.round()} g · ${t('fat')}: ${pl['f']!.round()} g · ${t('carbs')}: ${pl['c']!.round()} g'),
+                const SizedBox(height: 8),
+                Text(
+                  t('disclaimer'),
+                  style: const TextStyle(
+                      fontSize: 11, color: Colors.grey),
+                ),
+              ],
+            ),
+            color: kLime,
+          ),
+
+        card(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t('backup'),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 8),
+
+              Wrap(
+                spacing: 8,
+                children: [
+                  OutlinedButton(
+                    onPressed: () async {
+                      await Clipboard.setData(
+                        ClipboardData(
+                            text: await db.Store.exportJson()),
+                      );
+                      if (mounted) _snack(t('copied'));
+                    },
+                    child: Text(t('export')),
+                  ),
+
+                  OutlinedButton(
+                    onPressed: () async {
+                      final d =
+                          await Clipboard.getData('text/plain');
+
+                      final ok = await db.Store.importJson(
+                          d?.text ?? '');
+
+                      if (!mounted) return;
+                      setState(() {});
+                      _snack(ok ? t('imported') : t('bad'));
+                    },
+                    child: Text(t('import')),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _f(TextEditingController c, String k) => TextField(
-      controller: c,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: t(k)));
+        controller: c,
+        keyboardType:
+            const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(labelText: t(k)),
+      );
 }
