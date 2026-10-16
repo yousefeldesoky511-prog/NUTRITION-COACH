@@ -1,4 +1,4 @@
-[16-10-2026 9:25 PM] .: import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -110,7 +110,7 @@ class _HomeState extends State<Home> {
                         child: Column(
                             crossAxisAlignment:
                                 CrossAxisAlignment.start,
-[16-10-2026 9:25 PM] .: children: [
+    children: [
                           Text(t('daily'),
                               style:
                                   const TextStyle(fontSize: 13)),
@@ -187,7 +187,7 @@ class _HomeState extends State<Home> {
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-[16-10-2026 9:25 PM] .: if (ms.isEmpty)
+ if (ms.isEmpty)
                 card(Text(t('empty'),
                     style: const TextStyle(color: Colors.grey))),
               for (final m in ms)
@@ -243,7 +243,7 @@ class _HomeState extends State<Home> {
           ]),
           ));
 }
-[16-10-2026 9:25 PM] .: // ---------------- Progress ----------------
+ // ---------------- Progress ----------------
 class ProgressPage extends StatefulWidget {
   const ProgressPage({super.key});
   @override
@@ -325,7 +325,7 @@ class _ProgressState extends State<ProgressPage> {
                                                               .circular(6))),
                                               if (days == 7)
                                                 Padding(
-[16-10-2026 9:25 PM] .: padding:
+padding:
                                                         const EdgeInsets.only(
                                                             top: 6),
                                                     child: Text(
@@ -429,7 +429,7 @@ class _AddMealState extends State<AddMeal> {
     await File(x.path).copy(dest);
     setState(() => photo = dest);
   }
-[16-10-2026 9:25 PM] .: @override
+ @override
   Widget build(BuildContext context) => Padding(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -493,7 +493,7 @@ class _AddMealState extends State<AddMeal> {
         ]),
       ])));
 }
-[16-10-2026 9:25 PM] .: // ---------------- Menu ----------------
+ // ---------------- Menu ----------------
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
 
@@ -616,7 +616,7 @@ class _MenuState extends State<MenuPage> {
         ),
 
         if (db.Store.profile.isNotEmpty)
-[16-10-2026 9:25 PM] .: card(
+ card(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
